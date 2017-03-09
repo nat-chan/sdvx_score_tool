@@ -61,9 +61,7 @@ class ScoreTool(wx.Frame):
 				self.element['captcha'][i].click()
 		self.element['KID'].send_keys(self.two_line_panel.input_panel.text_ctrl.GetValue())
 		self.element['pass'].send_keys(self.two_line_panel.password_panel.text_ctrl1.GetValue())
-		wx.Image(BytesIO(driver.get_screenshot_as_png())).SaveFile('before.png')
 		self.element['submit'].click()
-		wx.Image(BytesIO(driver.get_screenshot_as_png())).SaveFile('after.png')
 
 
 
