@@ -5,16 +5,17 @@ import wx
 import os
 from selenium import webdriver
 from io import BytesIO
-from input_panel import *
-from captcha_panel import *
+from input_panel import TwoLinePanel
+from captcha_panel import CaptchaPanel
 
 login_url = 'http://p.eagate.573.jp/gate/p/login.html?path='         \
             'http%3A%2F%2Fp.eagate.573.jp%2Fgame%2Fsdvx%2Fiv%2Fp%2F' \
-            'playdata%2Fmusicdata%2Findex.html%3Frecent%3D1'         \
-#click()
-#is_selected()
+            'playdata%2Fmusicdata%2Findex.html%3Fpage%3D1'
 
-#ConnectionRefusedError
+content_url = 'http://p.eagate.573.jp/game/sdvx/iv/p/playdata/musicdata/index.html?page=1'
+
+USERNAME = ''
+PASSWORD = ''
 
 class ScoreTool(wx.Frame):
 	def __init__(self, parent, driver, *args, **kwargs):
@@ -38,6 +39,9 @@ class ScoreTool(wx.Frame):
 		)
 
 		self.two_line_panel = TwoLinePanel(self.panel1, -1)
+
+		self.two_line_panel.input_panel.text_ctrl.SetValue(USERNAME)
+		self.two_line_panel.password_panel.text_ctrl1.SetValue(PASSWORD)
 
 		self.layout1 = wx.BoxSizer(wx.HORIZONTAL)
 		self.layout1.Add(self.question_bitmap)
@@ -63,7 +67,7 @@ class ScoreTool(wx.Frame):
 		self.element['pass'].send_keys(self.two_line_panel.password_panel.text_ctrl1.GetValue())
 		self.element['submit'].click()
 
-
+		self.Destroy()
 
 	@staticmethod
 	def findElement(driver):
@@ -74,7 +78,7 @@ class ScoreTool(wx.Frame):
 		element['KID'] = driver.find_element_by_id('KID')
 		element['pass'] = driver.find_element_by_id('pass')
 		element['submit'] = driver.find_element_by_xpath('//input[@class="login_btn textindent"]')
-#<input value="規約に同意してログイン" class="login_btn textindent" type="submit">
+		#<input value="規約に同意してログイン" class="login_btn textindent" type="submit">
 
 		return element
 
@@ -94,6 +98,24 @@ if __name__ == '__main__':
 	frame = ScoreTool(None, driver, -1, title='score_tool')
 	frame.Show()
 	app.MainLoop()
-	driver.close()
+	i = 1
+	if driver.current_url == content_url:
+		while True:
+			try:
+				t = driver.find_element_by_tag_name("table").text.split('\n')
+				print(
+				  ''.join(
+				   (lambda a,b,c,d,e: ','.join((a,b,c.replace('-',''),d.replace('-',''),e.replace('-','')))+'\n')(*i)
+				    for i in zip(t[2::8],t[3::8],t[6::8],t[7::8],t[8::8])
+				  )
+				)
+			except: break
+			i += 1
+			driver.get(content_url[:-1] + str(i))
+		driver.close()
 
+	else:
+		log = driver.current_url
+		driver.close()
+		raise Exception(log)
 
